@@ -1,6 +1,14 @@
+import collections
+import datetime
+
+import pandas
+
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
+
+data_file_path = '/Users/macbookbro/Downloads/wine3.xlsx'
+worksheet_name = 'Лист1'
 
 env = Environment(
     loader=FileSystemLoader('.'),
@@ -8,15 +16,26 @@ env = Environment(
 )
 
 template = env.get_template('template.html')
+excel_data_df = pandas.read_excel(data_file_path, worksheet_name, na_filter=False)
+wines = collections.defaultdict(list)
 
-rendered_page = template.render(
-    cap1_title="Красная кепка",
-    cap1_text="$ 100.00",
-    cap2_title="Чёрная кепка",
-    cap2_text="$ 120.00",
-    cap3_title="Ещё одна чёрная кепка",
-    cap3_text="$ 90.00",
-)
+for dictionary in excel_data_df.to_dict(orient='records'):
+    key = dictionary.pop('Категория')
+    wines[key].append(dictionary)
+
+now = datetime.datetime.now()
+years_delta = now.year - 1920
+
+if years_delta % 100 in range(11, 20):
+    company_age = str(years_delta) + ' лет'
+elif years_delta % 10 in [0, 5, 6, 7, 8, 9]:
+    company_age = str(years_delta) + ' лет'
+elif years_delta % 10 == 1:
+    company_age = str(years_delta) + ' год'
+elif years_delta % 10 in [2, 3, 4]:
+    company_age = str(years_delta) + ' года'
+
+rendered_page = template.render(company_age=company_age, wines=wines)
 
 with open('index.html', 'w', encoding="utf-8") as file:
     file.write(rendered_page)
