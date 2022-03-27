@@ -1,14 +1,18 @@
 import collections
 import datetime
+import os
 
 import pandas
 
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
+from dotenv import load_dotenv
 
-data_file_path = '/Users/macbookbro/Downloads/wine3.xlsx'
-worksheet_name = 'Лист1'
+load_dotenv()
+
+data_file_path = os.getenv('DATA_FILE_PATH')
+worksheet_name = os.getenv('WORKSHEET_NAME')
 
 env = Environment(
     loader=FileSystemLoader('.'),
